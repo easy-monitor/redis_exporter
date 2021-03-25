@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
+	"github.com/oliver006/redis_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -44,6 +45,7 @@ type Exporter struct {
 	mux *http.ServeMux
 
 	buildInfo BuildInfo
+	Conf      *config.Config
 }
 
 type Options struct {
@@ -75,6 +77,7 @@ type Options struct {
 	PingOnConnect           bool
 	Registry                *prometheus.Registry
 	BuildInfo               BuildInfo
+	Conf                    *config.Config
 }
 
 // NewRedisExporter returns a new exporter of Redis metrics.
@@ -85,6 +88,7 @@ func NewRedisExporter(redisURI string, opts Options) (*Exporter, error) {
 		redisAddr: redisURI,
 		options:   opts,
 		namespace: opts.Namespace,
+		Conf:      opts.Conf,
 
 		buildInfo: opts.BuildInfo,
 
