@@ -3,17 +3,21 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"flag"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 
+	"github.com/oliver006/redis_exporter/config"
 	"github.com/oliver006/redis_exporter/exporter"
 )
 
@@ -51,6 +55,21 @@ func getEnvInt64(key string, defaultVal int64) int64 {
 		}
 	}
 	return defaultVal
+}
+
+func loadConfig() (*config.Config, error) {
+	path, _ := os.Getwd()
+	path = filepath.Join(path, "conf/conf.yml")
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, errors.New("read conf.yml fail:" + path)
+	}
+	conf := new(config.Config)
+	err = yaml.Unmarshal(data, conf)
+	if err != nil {
+		return nil, errors.New("unmarshal conf.yml fail")
+	}
+	return conf, nil
 }
 
 func main() {
@@ -113,6 +132,10 @@ func main() {
 
 	if *showVersion {
 		return
+	}
+	conf, err := loadConfig()
+	if err != nil {
+		log.Fatalf("fail load conf.yml, err: %v", err.Error())
 	}
 
 	to, err := time.ParseDuration(*connectionTimeout)
@@ -197,6 +220,7 @@ func main() {
 				CommitSha: BuildCommitSha,
 				Date:      BuildDate,
 			},
+			Conf: conf,
 		},
 	)
 	if err != nil {

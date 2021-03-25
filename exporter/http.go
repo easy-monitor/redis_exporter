@@ -53,6 +53,15 @@ func (e *Exporter) scrapeHandler(w http.ResponseWriter, r *http.Request) {
 	target = u.String()
 
 	opts := e.options
+	module := r.URL.Query().Get("module")
+	if module != "" {
+		for i := 0; i < len(e.Conf.RedisModule); i++ {
+			if e.Conf.RedisModule[i].Name == module {
+				opts.User = e.Conf.RedisModule[i].User
+				opts.Password = e.Conf.RedisModule[i].Password
+			}
+		}
+	}
 
 	if ck := r.URL.Query().Get("check-keys"); ck != "" {
 		opts.CheckKeys = ck
