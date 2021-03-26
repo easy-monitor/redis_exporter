@@ -1,7 +1,4 @@
 service_list:
-  - name: logic.redis_exporter
-    port: 9121
-    host: ~
 dependencies: ~
 start_dependencies: []
 proc_list:
